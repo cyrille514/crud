@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciudades Favoritas - Panel de Control Premium</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @import "tailwindcss";
+        @layer base {
+            body { font-size: 0.875rem; line-height: 1.5; }
+        }
+    </style>
+    <style>
+        #modal-formulario         { display: none; }
+        #modal-formulario.abierto { display: flex; }
+        #campos-extra             { display: block; }
+        #campos-extra.oculto      { display: none; }
+
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        
+        @media (min-width: 1024px) {
+            html, body {
+                height: 100%;
+                width: 100%;
+                overflow: hidden;
+            }
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            #scale-wrapper {
+                transform-origin: center center;
+                width: 1024px;
+                position: relative;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[#272729] select-none font-sans antialiased text-gray-900">
+
+    <div id="scale-wrapper">
+
+        <!-- Layout principal -->
+        <main class="w-full max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch p-4">
+
+            <!-- Panel izquierdo: info de la ciudad -->
+            <section class="bg-[#3e5858] p-6 rounded-2xl flex flex-col justify-center text-left shadow-lg lg:col-span-1 w-full order-2 lg:order-1">
+                <p id="titulo-tema" class="text-green-500 font-bold text-xs uppercase tracking-widest border-b border-[#19aeae] pb-2 mb-4">Cargando...</p>
+                <h1 id="ciudad-nombre" class="text-white text-3xl font-black uppercase tracking-tight drop-shadow-xs mb-1">-</h1>
+                <p id="ciudad-subtitulo" class="text-slate-400 font-bold text-sm tracking-wide mb-1">-</p>
+                <p id="ciudad-descripcion" class="text-teal-50 text-xs italic leading-relaxed">-</p>
+            </section>
+
+            <!-- Panel central: imagen + controles -->
+            <section class="bg-[#141418] p-4 rounded-2xl flex flex-col justify-between items-center shadow-2xl lg:col-span-2 border border-[#272D54] w-full order-1 lg:order-2">
+
+                <!-- Botones ARRIBA -->
+                <div class="grid grid-cols-3 gap-2.5 w-full mb-4">
+                    <button id="btn-retroceder" type="button"
+                            class="bg-[#2D3359] border border-slate-700/50 text-slate-200 text-[11px] sm:text-xs py-2.5 px-1 rounded-lg hover:bg-[#383F6D] active:scale-95 transition-all duration-200 cursor-pointer uppercase font-medium tracking-wide text-center">
+                        ← Volver
+                    </button>
+                    <button id="btn-play" type="button"
+                            class="bg-[#2D3359] border border-slate-700/50 text-emerald-400 text-[11px] sm:text-xs py-2.5 px-1 rounded-lg hover:bg-[#383F6D] active:scale-95 transition-all duration-200 cursor-pointer uppercase font-bold tracking-wider text-center">
+                        ▶ Play
+                    </button>
+                    <button id="btn-avanzar" type="button"
+                            class="bg-[#2D3359] border border-slate-700/50 text-slate-200 text-[11px] sm:text-xs py-2.5 px-1 rounded-lg hover:bg-[#383F6D] active:scale-95 transition-all duration-200 cursor-pointer uppercase font-medium tracking-wide text-center">
+                        Sig →
+                    </button>
+                </div>
+
+                <!-- Imagen -->
+                <div class="w-full bg-[#161933] p-1.5 rounded-xl border border-slate-800/40 overflow-hidden flex items-center justify-center min-h-[300px] sm:min-h-50 lg:min-h-60">
+                    <img id="ciudad-imagen" src="" alt="Cargando Destino..."
+                         class="w-full h-auto object-cover max-h-80 sm:max-h-[380px] lg:h-[520px] lg:max-h-[520px] rounded-lg transition-all duration-300 bg-slate-900">
+                </div>
+            </section>
+
+            <!-- Panel derecho: panel de control -->
+            <section class="bg-[#3e5858] p-6 rounded-2xl flex flex-col justify-center items-center shadow-lg lg:col-span-1 w-full order-3 mx-auto">
+                <h3 class="text-green-500 font-bold text-sm uppercase tracking-widest mb-4 font-mono">Panel de Control</h3>
+                <div class="grid grid-cols-1 gap-3 w-full max-w-[200px]">
+                    <button id="btn-agregar"   type="button" class="w-full bg-[#272D54] hover:bg-[#353D73] text-white font-bold py-2 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md active:scale-95 text-center">Agregar</button>
+                    <button id="btn-devolver"  type="button" class="w-full bg-[#272D54] hover:bg-[#353D73] text-white font-bold py-2 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md active:scale-95 text-center">Devolver</button>
+                    <button id="btn-modificar" type="button" class="w-full bg-[#272D54] hover:bg-[#353D73] text-white font-bold py-2 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md active:scale-95 text-center">Modificar Datos</button>
+                    <button id="btn-eliminar"  type="button" class="w-full bg-[#E60000] hover:bg-[#CC0000] text-white font-black py-2.5 px-4 rounded-xl text-xs uppercase tracking-widest transition-all duration-200 cursor-pointer shadow-md active:scale-95 text-center">Eliminar</button>
+                    <div class="border-t border-[#19aeae] my-1"></div>
+                    <button id="btn-inicio"    type="button" class="w-full bg-[#19aeae] hover:bg-[#148f8f] text-white font-black py-2 px-4 rounded-xl text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer shadow-md active:scale-95 text-center">⌂ Inicio</button>
+                </div>
+            </section>
+
+        </main>
+
+        <div id="modal-formulario"
+             class="absolute inset-0 bg-black/60 backdrop-blur-sm items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md border border-gray-200 max-h-[90vh] overflow-y-auto">
+
+                <div class="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
+                    <h3 id="modal-titulo" class="text-base font-bold text-slate-900 uppercase tracking-tight">Formulario de Acción</h3>
+                    <button id="btn-cerrar-modal" type="button"
+                            class="text-gray-400 hover:text-gray-600 text-2xl font-bold cursor-pointer leading-none">&times;</button>
+                </div>
+
+                <div class="space-y-4 text-left">
+                    <div>
+                        <label for="form-titulo" class="text-xs font-bold text-black uppercase mb-1">
+                            Nombre de la Ciudad:
+                        </label>
+                        <input type="text" id="form-titulo" placeholder="Ej: París"
+                               class="w-full border border-gray-300 rounded-lg p-2.5 bg-gray-50 focus:bg-white focus:outline-2 focus:outline-teal-500 text-sm text-black">
+                    </div>
+
+                    <div id="campos-extra">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="form-archivo" class="block text-xs font-bold text-gray-700 uppercase mb-1">
+                                    Archivo o URL de la Imagen:
+                                </label>
+                                <input type="text" id="form-archivo" placeholder="Ej: paris.jpg o https://..."
+                                       class="w-full border border-gray-300 rounded-lg p-2.5 bg-gray-50 focus:bg-white focus:outline-2 focus:outline-teal-500 text-sm font-mono text-gray-900">
+                            </div>
+                            <div>
+                                <label for="form-subtitulo" class="block text-xs font-bold text-gray-700 uppercase mb-1">
+                                    Subtítulo / Región:
+                                </label>
+                                <input type="text" id="form-subtitulo" placeholder="Ej: Capital de Francia"
+                                       class="w-full border border-gray-300 rounded-lg p-2.5 bg-gray-50 focus:bg-white focus:outline-2 focus:outline-teal-500 text-sm text-gray-900">
+                            </div>
+                            <div>
+                                <label for="form-descripcion" class="block text-xs font-bold text-gray-700 uppercase mb-1">
+                                    Descripción Detallada:
+                                </label>
+                                <textarea id="form-descripcion" rows="3"
+                                          placeholder="Escribe aquí los detalles de la ciudad..."
+                                          class="w-full border border-gray-300 rounded-lg p-2.5 bg-gray-50 focus:bg-white focus:outline-2 focus:outline-teal-500 text-sm resize-none overflow-y-auto text-gray-900"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-2">
+                        <button id="btn-confirmar-accion" type="button"
+                                class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 px-4 rounded-lg shadow-md uppercase tracking-wider text-xs transition-all duration-200 cursor-pointer text-center">
+                            Confirmar Operación
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="./js/app.js"></script>
+
+</body>
+</html>
